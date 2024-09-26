@@ -63,7 +63,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#333',
     marginBottom: 8,
-    fontFamily: 'Helvetica', // Custom font family for better aesthetics
   },
   email: {
     fontSize: 18,

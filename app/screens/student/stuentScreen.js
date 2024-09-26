@@ -1,5 +1,6 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
+// import { useNavigation } from '@react-navigation/native';
 import {
   View,
   Text,
@@ -12,8 +13,10 @@ import {
 // import { BASE_URL, STUDENTS, LOGIN_URL } from "@env";
 import Loader from "../../components/loader/loader";
 
-export default function Student() {
+export default function Student({navigation}) {
+
   const [student, setStudent] = useState([]);
+  const [addStudent, setAddStudent] = useState(false);
 
   useEffect(() => {
     // Async function defined inside useEffect
@@ -32,6 +35,14 @@ export default function Student() {
 
   console.log("Fetched students:", student);
 
+  const handleAddStudent = () => {
+    console.log("handleAddStudent");
+    
+    navigation.navigate("AddStudent"); // Navigate to AddStudent page
+  };
+ 
+  
+
   return (
     <>
       {!student.length > 0 ? (
@@ -39,16 +50,18 @@ export default function Student() {
       ) : (
         <>
           <View style={{backgroundColor:"#f7f7f7"}}>
-            <TouchableOpacity>
-              <Text style={styles.addStudentButton}>Add Student</Text>
+            <TouchableOpacity onPress={handleAddStudent}>
+              <Text style={styles.addStudentButton}  >Add Student</Text>
             </TouchableOpacity>
           </View>
           <ScrollView contentContainerStyle={styles.container}>
             {student.map((item, index) => (
               <View key={index} style={styles.card}>
-                <Text style={styles.name}>
-                  {" "}
-                  Admission Number: {item.admissionNumber}{" "}
+                <Text style={styles.name}>             
+                  SR No: {index+1}
+                </Text>
+                <Text style={styles.name}>             
+                  Admission Number: {item.admissionNumber}
                 </Text>
                 <Text style={styles.details}>Class: {item.classId}</Text>
                 <Text style={styles.details}>Date of birth: {item.dob}</Text>
