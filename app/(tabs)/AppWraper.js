@@ -7,7 +7,7 @@ import { useSelector } from "react-redux";
 import Login from '../screens/loginScreen';
 import LogOut from '../screens/logOutScreen';
 import Registration from '../screens/registrationScreen';
-import User from '../screens/userScreen';
+import User from '../screens/user/userScreen';
 import Student from '../screens/student/stuentScreen';
 import Staff from '../screens/staffScreen';
 import Parent from '../screens/parentScreen';
