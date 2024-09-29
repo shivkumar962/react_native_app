@@ -15,6 +15,7 @@ import Class from '../screens/classScreen';
 import Notification from '../screens/notificationScreen';
 import Setting from '../screens/settingScreen';
 import AddStudent from '../screens/student/addStudent';
+import UpdateStudent from '../screens/student/updateStudent';
 import CustomDrawerContent from '../screens/user/sideBaarUser'
 
 const Drawer = createDrawerNavigator();
@@ -57,6 +58,7 @@ function StudentStackScreen() {
     <Stack.Navigator>
       <Stack.Screen name="Student" component={Student} options={{ headerShown: false }}/>
       <Stack.Screen name="AddStudent" component={AddStudent} />
+      <Stack.Screen name="UpdateStudent" component={UpdateStudent} />
     </Stack.Navigator>
   );
 }

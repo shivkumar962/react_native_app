@@ -4,6 +4,7 @@ import { PersistGate } from 'redux-persist/integration/react'
 
 import AppWraper from './AppWraper'
 import { View, Text } from "react-native";
+import { PaperProvider } from "react-native-paper";
 
 
 
@@ -14,12 +15,12 @@ export default function App() {
 
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-
-      <AppWraper/>
-
+        <PaperProvider>
+          <AppWraper />
+        </PaperProvider>
       </PersistGate>
     </Provider>
-   
+
   );
 }
 

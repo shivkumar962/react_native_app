@@ -1,87 +1,186 @@
-import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
-import { Formik } from 'formik';
-import * as Yup from 'yup';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Platform,
+} from "react-native";
+import DateTimePicker from "@react-native-community/datetimepicker";
+import { Picker } from "@react-native-picker/picker";
+import { Formik } from "formik";
+import * as Yup from "yup";
+import axios from "axios";
 
+
+// Form Validation Schema
 const AddStudentSchema = Yup.object().shape({
-  admissionNumber: Yup.string().required('Admission Number is required'),
-  dob: Yup.date().required('Date of Birth is required'),
-  gender: Yup.string().required('Gender is required'),
-  enrollmentDate: Yup.date().required('Enrollment Date is required'),
-  userId: Yup.string().required('User ID is required'),
+  admissionNumber: Yup.string().required("Admission Number is required"),
+  dob: Yup.date().required("Date of Birth is required"),
+  gender: Yup.string().required("Gender is required"),
+  enrollmentDate: Yup.date().required("Enrollment Date is required"),
 });
 
 export default function AddStudent() {
-  const handleSubmit = (values) => {
-    console.log('Form Values:', values);
-    // Yahan API call ya database update karne ka code likhein
+
+  const [apiResponse, setApiResponse] = useState("");
+  const [apiResponseMessage, setApiResponseMessage] = useState("");
+  setTimeout(() => {
+    setApiResponseMessage("");
+  }, 5000);
+  const [dob, setDob] = useState(new Date());
+  const [showDobPicker, setShowDobPicker] = useState(false);
+
+  const [enrollmentDate, setEnrollmentDate] = useState(new Date());
+  const [showEnrollmentDatePicker, setShowEnrollmentDatePicker] =
+    useState(false);
+
+  // Helper function to format date as "DD/MM/YYYY"
+  const formatDate = (date) => {
+    return date.toLocaleDateString("en-GB"); // 'en-GB' formats as DD/MM/YYYY
   };
+
+  const handleDobChange = (event, selectedDate) => {
+    const currentDate = selectedDate || dob;
+    setShowDobPicker(Platform.OS === "ios");
+    setDob(currentDate);
+  };
+
+  const handleEnrollmentDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || enrollmentDate;
+    setShowEnrollmentDatePicker(Platform.OS === "ios");
+    setEnrollmentDate(currentDate);
+  };
+
+  const handleSubmit = async (values) => {
+    console.log("form value===>", values);
+
+    try {
+      // API call
+      const response = await axios.post("http://192.168.31.231:3000/students", {
+        admissionNumber: values.admissionNumber,
+        dob: formatDate(dob),
+        gender: values.gender,
+        enrollmentDate: formatDate(enrollmentDate),
+      });
+      console.log("API Response:", response.data);
+      setApiResponse(response.data);
+      setApiResponseMessage(response.data.message)
+      if (response.data.status) {
+        alert("Student added successfully!");
+      }
+    } catch (error) {
+      console.error("Error adding student:", error);
+      alert("There was an error adding the student.");
+    }
+  };
+
+  console.log("apiResponse==>", apiResponse);
 
   return (
     <View style={styles.container}>
       <Formik
         initialValues={{
-          admissionNumber: '',
-          dob: '',
-          gender: '',
-          enrollmentDate: '',
-          userId: '',
+          admissionNumber: "",
+          dob: "",
+          gender: "",
+          enrollmentDate: "",
         }}
         validationSchema={AddStudentSchema}
         onSubmit={handleSubmit}
       >
-        {({ handleChange, handleBlur, handleSubmit, values, errors }) => (
+        {({
+          handleChange,
+          handleBlur,
+          handleSubmit,
+          values,
+          errors,
+          setFieldValue,
+        }) => (
           <View style={styles.card}>
             <Text style={styles.title}>Add Student</Text>
 
+            {/* Admission Number */}
+            <Text style={{marginLeft:2}} >Admission Number</Text>
             <TextInput
               style={styles.input}
               placeholder="Admission Number"
-              onChangeText={handleChange('admissionNumber')}
-              onBlur={handleBlur('admissionNumber')}
+              onChangeText={handleChange("admissionNumber")}
+              onBlur={handleBlur("admissionNumber")}
               value={values.admissionNumber}
             />
-            {errors.admissionNumber && <Text style={styles.error}>{errors.admissionNumber}</Text>}
+            {errors.admissionNumber && (
+              <Text style={styles.error}>{errors.admissionNumber}</Text>
+            )}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Date of Birth (YYYY-MM-DD)"
-              onChangeText={handleChange('dob')}
-              onBlur={handleBlur('dob')}
-              value={values.dob}
-            />
+            {/* Date of Birth */}
+            <Text style={{marginLeft:2}} >Date of Birth</Text>
+            <TouchableOpacity onPress={() => setShowDobPicker(true)}>
+              <TextInput
+                style={styles.input}
+                placeholder="DD/MM/YYYY" // Corrected placeholder
+                value={formatDate(dob)} // Date formatted as "DD/MM/YYYY"
+                editable={false}
+              />
+            </TouchableOpacity>
+            {showDobPicker && (
+              <DateTimePicker
+                value={dob}
+                mode="date"
+                display="default"
+                onChange={(e, selectedDate) => {
+                  handleDobChange(e, selectedDate);
+                  setFieldValue("dob", selectedDate); // Formik field update
+                }}
+              />
+            )}
             {errors.dob && <Text style={styles.error}>{errors.dob}</Text>}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Gender"
-              onChangeText={handleChange('gender')}
-              onBlur={handleBlur('gender')}
-              value={values.gender}
-            />
+            {/* Gender Dropdown */}
+            <Text style={{marginLeft:2}} >Gender</Text>
+            <Picker
+              selectedValue={values.gender}
+              style={styles.picker} // Applied custom style for border radius
+              onValueChange={(itemValue) => setFieldValue("gender", itemValue)}
+            >
+              <Picker.Item label="Select Gender" value="" />
+              <Picker.Item label="Male" value="male" />
+              <Picker.Item label="Female" value="female" />
+              <Picker.Item label="Other" value="other" />
+            </Picker>
             {errors.gender && <Text style={styles.error}>{errors.gender}</Text>}
 
-            <TextInput
-              style={styles.input}
-              placeholder="Enrollment Date (YYYY-MM-DD)"
-              onChangeText={handleChange('enrollmentDate')}
-              onBlur={handleBlur('enrollmentDate')}
-              value={values.enrollmentDate}
-            />
-            {errors.enrollmentDate && <Text style={styles.error}>{errors.enrollmentDate}</Text>}
+            {/* Enrollment Date */}
+            <Text style={{marginLeft:2}} >Enrollment Date</Text>
+            <TouchableOpacity onPress={() => setShowEnrollmentDatePicker(true)}>
+              <TextInput
+                style={styles.input}
+                placeholder="DD/MM/YYYY" // Corrected placeholder
+                value={formatDate(enrollmentDate)} // Date formatted as "DD/MM/YYYY"
+                editable={false}
+              />
+            </TouchableOpacity>
+            {showEnrollmentDatePicker && (
+              <DateTimePicker
+                value={enrollmentDate}
+                mode="date"
+                display="default"
+                onChange={(e, selectedDate) => {
+                  handleEnrollmentDateChange(e, selectedDate);
+                  setFieldValue("enrollmentDate", selectedDate); // Formik field update
+                }}
+              />
+            )}
+            {errors.enrollmentDate && (
+              <Text style={styles.error}>{errors.enrollmentDate}</Text>
+            )}
 
-            <TextInput
-              style={styles.input}
-              placeholder="User ID"
-              onChangeText={handleChange('userId')}
-              onBlur={handleBlur('userId')}
-              value={values.userId}
-            />
-            {errors.userId && <Text style={styles.error}>{errors.userId}</Text>}
-
+            {/* Submit Button */}
             <TouchableOpacity style={styles.button} onPress={handleSubmit}>
               <Text style={styles.buttonText}>Add Student</Text>
             </TouchableOpacity>
+            {apiResponseMessage && <Text style={{marginTop:8}}>{apiResponseMessage}</Text>} 
           </View>
         )}
       </Formik>
@@ -125,6 +224,16 @@ const styles = StyleSheet.create({
     borderColor: "#ddd",
     borderWidth: 1,
   },
+  picker: {
+    backgroundColor: "#f9f9f9",
+    padding: 10,
+    borderRadius: 10, // Added border radius for Picker
+    marginBottom: 15,
+    borderColor: "#ddd",
+    borderWidth: 1,
+    color: "#333", 
+ 
+  },
   button: {
     backgroundColor: "#28a745",
     paddingVertical: 15,
@@ -143,7 +252,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   error: {
-    color: 'red',
+    color: "red",
     marginBottom: 10,
   },
 });
